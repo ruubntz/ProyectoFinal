@@ -14,7 +14,7 @@ export default function WelcomeScreen({ navigation }) {
 
       <View style={styles.logoBox}>
         <Image 
-            source={require('../assets/NearBites.png')} 
+            source={require('../../assets/NearBites.png')} 
             style={styles.logo}
             resizeMode="contain"
         />

@@ -18,18 +18,20 @@ export default function MapScreen({ navigation }) {
     getLocation,
   } = useLocation();
 
+
   const fakeRestaurant = location
-  ? {
+    ? {
       name: 'Restaurante NearBites',
       rating: 4.5,
       address: 'Calle Ejemplo 24',
       allergens: ['Gluten', 'Lactosa', 'Frutos secos'],
-      description:
-        'Restaurante simulado para pruebas. Más adelante estos datos vendrán desde Firebase.',
+      description: 'Restaurante simulado para pruebas. Más adelante estos datos vendrán desde Firebase.',
+      phone: '123456789',              // ✅
+      website: 'https://www.google.com', // ✅
       latitude: location.latitude + 0.001,
       longitude: location.longitude + 0.001,
     }
-  : null;
+    : null;
 
   const handleGoHome = () => {
     setMenuVisible(false);
@@ -75,72 +77,76 @@ export default function MapScreen({ navigation }) {
       <MapView
         style={StyleSheet.absoluteFillObject}
         region={{
-            latitude: location.latitude,
-            longitude: location.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
+          latitude: location.latitude,
+          longitude: location.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
         }}
         onPress={() => {
-            
-            setBubbleVisible(false);
-            
+
+          setBubbleVisible(false);
+
         }}
-        >
+      >
         <Marker
-            coordinate={{
-                latitude: location.latitude,
-                longitude: location.longitude,
-            }}
-            >
-            <View style={styles.userMarker}>
-                <View style={styles.userInnerDot} />
-            </View>
+          coordinate={{
+            latitude: location.latitude,
+            longitude: location.longitude,
+          }}
+        >
+          <View style={styles.userMarker}>
+            <View style={styles.userInnerDot} />
+          </View>
         </Marker>
 
-    {fakeRestaurant && (
-        <Marker
+        {fakeRestaurant && (
+          <Marker
             coordinate={{
-            latitude: fakeRestaurant.latitude,
-            longitude: fakeRestaurant.longitude,
+              latitude: fakeRestaurant.latitude,
+              longitude: fakeRestaurant.longitude,
             }}
             onPress={(e) => {
-            e.stopPropagation();
-            console.log('Restaurante pulsado:', fakeRestaurant);
-            setBubbleVisible(true);
+              e.stopPropagation();
+              console.log('Restaurante pulsado:', fakeRestaurant);
+              setBubbleVisible(true);
             }}
-        />
+          />
         )}
       </MapView>
 
       {bubbleVisible && fakeRestaurant && (
         <TouchableOpacity activeOpacity={1}>
-        <View style={styles.restaurantBubble}>
+          <View style={styles.restaurantBubble}>
             <Text style={styles.bubbleTitle}>{fakeRestaurant.name}</Text>
 
             <Text style={styles.bubbleRating}>
-            ⭐ {fakeRestaurant.rating} / 5
+              ⭐ {fakeRestaurant.rating} / 5
             </Text>
 
             <Text style={styles.bubbleText}>
-            {fakeRestaurant.address}
+              {fakeRestaurant.address}
             </Text>
 
             <View style={styles.bubbleButtons}>
-            <Button
+              <Button
                 title="Detalles"
-                onPress={() => setDetailsVisible(true)}
-            />
+                onPress={() => {
+                  navigation.navigate('Detail', {
+                    restaurant: fakeRestaurant,
+                  });
+                }}
+              />
 
-            <Button
+              <Button
                 title="Cerrar"
                 onPress={() => setBubbleVisible(false)}
-            />
+              />
             </View>
 
             <View style={styles.bubbleArrow} />
-        </View>
+          </View>
         </TouchableOpacity>
-        )}
+      )}
 
       <TouchableOpacity
         style={styles.menuButton}
@@ -205,48 +211,48 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   restaurantBubble: {
-  position: 'absolute',
-  top: 120,
-  left: 35,
-  right: 35,
-  backgroundColor: '#fff',
-  padding: 14,
-  borderRadius: 16,
-  borderWidth: 1,
-  borderColor: '#ddd',
-  zIndex: 6,
-  elevation: 6,
-},
-bubbleTitle: {
-  fontSize: 17,
-  fontWeight: 'bold',
-  marginBottom: 6,
-},
-bubbleRating: {
-  fontSize: 15,
-  marginBottom: 6,
-},
-bubbleText: {
-  fontSize: 14,
-  marginBottom: 10,
-},
-bubbleButtons: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  gap: 8,
-},
-bubbleArrow: {
-  position: 'absolute',
-  bottom: -10,
-  left: 40,
-  width: 20,
-  height: 20,
-  backgroundColor: '#fff',
-  transform: [{ rotate: '45deg' }],
-  borderRightWidth: 1,
-  borderBottomWidth: 1,
-  borderColor: '#ddd',
-},
+    position: 'absolute',
+    top: 120,
+    left: 35,
+    right: 35,
+    backgroundColor: '#fff',
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    zIndex: 6,
+    elevation: 6,
+  },
+  bubbleTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    marginBottom: 6,
+  },
+  bubbleRating: {
+    fontSize: 15,
+    marginBottom: 6,
+  },
+  bubbleText: {
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  bubbleButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  bubbleArrow: {
+    position: 'absolute',
+    bottom: -10,
+    left: 40,
+    width: 20,
+    height: 20,
+    backgroundColor: '#fff',
+    transform: [{ rotate: '45deg' }],
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#ddd',
+  },
   centered: {
     flex: 1,
     padding: 24,
@@ -348,7 +354,7 @@ bubbleArrow: {
   modalButton: {
     marginTop: 8,
   },
-    userMarker: {
+  userMarker: {
     width: 26,
     height: 26,
     borderRadius: 13,
@@ -357,12 +363,12 @@ bubbleArrow: {
     borderColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
-    },
+  },
 
-    userInnerDot: {
+  userInnerDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
     backgroundColor: '#ffffff',
-    },
+  },
 });
