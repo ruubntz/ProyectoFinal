@@ -11,10 +11,13 @@ export default function WelcomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>NearBites</Text>
 
       <View style={styles.logoBox}>
-        <Text style={styles.logoText}>LOGO</Text>
+        <Image 
+            source={require('../assets/NearBites.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+        />
       </View>
 
       <View style={styles.buttonContainer}>
@@ -42,17 +45,12 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   logoBox: {
-    width: 180,
-    height: 180,
-    borderRadius: 12,
-    backgroundColor: '#d9eef7',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    justifyContent: 'center',
   },
-  logoText: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  logo: {
+    width: 300,
+    height: 300,
   },
   buttonContainer: {
     width: '100%',
