@@ -9,11 +9,16 @@ import { useState } from 'react';
 
 
 export default function App() {
+
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [loading, setLoading] = useState(false);
 
+
+
   const getLocation = async () => {
+  
+  
     try {
       setLoading(true);
       setErrorMsg(null);
