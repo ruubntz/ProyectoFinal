@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import {
     View,
     Text,
@@ -8,12 +9,38 @@ import {
     Linking,
 } from 'react-native';
 
-export default function RestaurantDetailScreen({ route, navigation }) {
-    const { restaurant } = route.params;
+export default function RestaurantDetailScreen({
+    route,
+    navigation,
+}) {
 
-    const [activeTab, setActiveTab] = useState('details');
+    const restaurant =
+        route?.params?.restaurant;
 
-    // 🟢 Comentarios simulados
+    console.log(
+        'Restaurant recibido:',
+        restaurant
+    );
+
+    // 🛡️ Protección
+    if (!restaurant) {
+
+        return (
+            <View style={styles.errorContainer}>
+
+                <Text style={styles.errorText}>
+                    Restaurante no encontrado
+                </Text>
+
+            </View>
+        );
+
+    }
+
+    const [activeTab, setActiveTab] =
+        useState('details');
+
+    // 🟢 Comentarios fake
     const comments = [
         {
             id: 1,
@@ -33,29 +60,52 @@ export default function RestaurantDetailScreen({ route, navigation }) {
 
     // 📞 Llamada
     const handleCall = () => {
-        if (restaurant.phone) {
-            Linking.openURL(`tel:${restaurant.phone}`);
+
+        if (!restaurant.phone) {
+            return;
         }
+
+        Linking.openURL(
+            `tel:${restaurant.phone}`
+        );
+
     };
 
-    // 🌐 Web
+    // 🌐 Página web
     const handleWebsite = () => {
-        if (restaurant.website) {
-            Linking.openURL(restaurant.website);
+
+        if (!restaurant.website) {
+            return;
         }
+
+        Linking.openURL(
+            restaurant.website
+        );
+
     };
 
-    // 🔹 Render comentario
+    // 💬 Render comentario
     const renderComment = (comment) => {
-        const formattedDate = comment.date.toLocaleDateString('es-ES', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-        });
+
+        const formattedDate =
+            comment.date.toLocaleDateString(
+                'es-ES',
+                {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                }
+            );
 
         return (
-            <View key={comment.id} style={styles.comment}>
-                <Text>{comment.text}</Text>
+            <View
+                key={comment.id}
+                style={styles.comment}
+            >
+
+                <Text>
+                    {comment.text}
+                </Text>
 
                 <Text style={styles.commentRating}>
                     ⭐ {comment.rating} estrellas
@@ -66,6 +116,7 @@ export default function RestaurantDetailScreen({ route, navigation }) {
                 </Text>
 
                 <View style={styles.divider} />
+
             </View>
         );
     };
@@ -73,79 +124,168 @@ export default function RestaurantDetailScreen({ route, navigation }) {
     return (
         <ScrollView style={styles.container}>
 
-            {/* 🟣 CARD PRINCIPAL */}
+            {/* 🟣 Card principal */}
             <View style={styles.card}>
 
-                <Text style={styles.title}>{restaurant.name}</Text>
-
-                <Text style={styles.description}>
-                    {restaurant.description}
+                <Text style={styles.title}>
+                    {restaurant.name || 'Sin nombre'}
                 </Text>
 
-                {/* Tabs */}
+                <Text style={styles.description}>
+                    {
+                        restaurant.description ||
+                        'Sin descripción disponible'
+                    }
+                </Text>
+
+                {/* 🔘 Tabs */}
                 <View style={styles.tabs}>
-                    <TouchableOpacity onPress={() => setActiveTab('details')}>
-                        <Text style={[
-                            styles.tabText,
-                            activeTab === 'details' && styles.activeTab
-                        ]}>
+
+                    <TouchableOpacity
+                        onPress={() =>
+                            setActiveTab('details')
+                        }
+                    >
+
+                        <Text
+                            style={[
+                                styles.tabText,
+                                activeTab === 'details' &&
+                                styles.activeTab,
+                            ]}
+                        >
                             Detalles
                         </Text>
+
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => setActiveTab('contact')}>
-                        <Text style={[
-                            styles.tabText,
-                            activeTab === 'contact' && styles.activeTab
-                        ]}>
+                    <TouchableOpacity
+                        onPress={() =>
+                            setActiveTab('contact')
+                        }
+                    >
+
+                        <Text
+                            style={[
+                                styles.tabText,
+                                activeTab === 'contact' &&
+                                styles.activeTab,
+                            ]}
+                        >
                             Contacto
                         </Text>
+
                     </TouchableOpacity>
+
                 </View>
 
-                {/* Contenido dinámico */}
+                {/* 🧩 Contenido dinámico */}
                 <View style={styles.tabContent}>
 
                     {activeTab === 'details' && (
                         <>
-                            <Text>⭐ {restaurant.rating} / 5</Text>
-                            <Text>📍 {restaurant.address}</Text>
-                            <Text>⚠️ {restaurant.allergens.join(', ')}</Text>
+
+                            <Text>
+                                ⭐ {
+                                    restaurant.rating ||
+                                    'Sin rating'
+                                } / 5
+                            </Text>
+
+                            <Text>
+                                📍 {
+                                    restaurant.address ||
+                                    'Dirección no disponible'
+                                }
+                            </Text>
+
+                            <Text>
+                                ⚠️ {
+                                    restaurant.allergens?.length > 0
+                                        ? restaurant.allergens.join(', ')
+                                        : 'Sin alérgenos'
+                                }
+                            </Text>
+
+                            {/* 📍 Ver mapa */}
+                            <TouchableOpacity
+                                style={styles.mapButton}
+                                onPress={() => {
+
+                                    navigation.navigate(
+                                        'Map',
+                                        {
+                                            restaurants: [
+                                                restaurant,
+                                            ],
+                                        }
+                                    );
+
+                                }}
+                            >
+
+                                <Text style={styles.mapButtonText}>
+                                    📍 Ver en mapa
+                                </Text>
+
+                            </TouchableOpacity>
+
                         </>
                     )}
 
+                    {/* ☎️ Contacto */}
                     {activeTab === 'contact' && (
                         <>
+
                             <Text
                                 onPress={handleCall}
                                 style={styles.link}
                             >
-                                📞 {restaurant.phone || '123456789'}
+                                📞 {
+                                    restaurant.phone ||
+                                    'No disponible'
+                                }
                             </Text>
 
                             <Text
                                 onPress={handleWebsite}
                                 style={styles.link}
                             >
-                                🌐 {restaurant.website || 'https://www.restaurante.com'}
+                                🌐 {
+                                    restaurant.website ||
+                                    'No disponible'
+                                }
                             </Text>
+
                         </>
                     )}
 
                 </View>
 
-                {/* Acciones */}
+                {/* ❤️ Acciones */}
                 <View style={styles.actions}>
-                    <Text style={styles.icon}>♡</Text>
-                    <Text style={styles.icon}>✎</Text>
+
+                    <Text style={styles.icon}>
+                        ♡
+                    </Text>
+
+                    <Text style={styles.icon}>
+                        ✎
+                    </Text>
+
                 </View>
+
             </View>
 
-            {/* 🟢 CARD COMENTARIOS */}
+            {/* 🟢 Comentarios */}
             <View style={styles.card}>
-                <Text style={styles.commentsTitle}>Comentarios</Text>
+
+                <Text style={styles.commentsTitle}>
+                    Comentarios
+                </Text>
 
                 {comments.map(renderComment)}
+
             </View>
 
         </ScrollView>
@@ -153,10 +293,23 @@ export default function RestaurantDetailScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
+
     container: {
         flex: 1,
         padding: 12,
         backgroundColor: '#f2f2f2',
+    },
+
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+    },
+
+    errorText: {
+        fontSize: 18,
+        color: '#cc0000',
     },
 
     card: {
@@ -217,6 +370,19 @@ const styles = StyleSheet.create({
         marginTop: 8,
     },
 
+    mapButton: {
+        marginTop: 16,
+        backgroundColor: '#007AFF',
+        padding: 12,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+
+    mapButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+
     commentsTitle: {
         fontSize: 18,
         fontWeight: 'bold',
@@ -245,4 +411,5 @@ const styles = StyleSheet.create({
         backgroundColor: '#ddd',
         marginTop: 8,
     },
+
 });

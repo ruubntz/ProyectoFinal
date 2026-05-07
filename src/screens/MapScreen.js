@@ -1,15 +1,37 @@
-import { useState } from 'react';
-import { StyleSheet, View, Button, Text, TouchableOpacity, Modal } from 'react-native';
-import MapView, { Marker, Callout } from 'react-native-maps';
+import {
+  useState,
+  useEffect,
+} from 'react';
+
+import {
+  StyleSheet,
+  View,
+  Button,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
+
+import MapView, {
+  Marker,
+} from 'react-native-maps';
 
 import useLocation from '../hooks/useLocation';
 import LoadingOverlay from '../components/ui/LoadingOverlay';
 import SideMenu from '../navigation/SideMenu';
 
-export default function MapScreen({ navigation }) {
-  const [menuVisible, setMenuVisible] = useState(false);
-  const [detailsVisible, setDetailsVisible] = useState(false);
-  const [bubbleVisible, setBubbleVisible] = useState(false);
+// 📦 Base de datos fallback
+import restaurantsData from '../data/restaurantes';
+
+export default function MapScreen({
+  navigation,
+  route,
+}) {
+
+  const [menuVisible, setMenuVisible] =
+    useState(false);
+
+  const [selectedRestaurant, setSelectedRestaurant] =
+    useState(null);
 
   const {
     location,
@@ -18,76 +40,96 @@ export default function MapScreen({ navigation }) {
     getLocation,
   } = useLocation();
 
+  // 🍔 Restaurantes recibidos
+  const restaurants =
+    route?.params?.restaurants ||
+    restaurantsData;
 
-  const fakeRestaurant = location
-    ? {
-      name: 'Restaurante NearBites',
-      rating: 4.5,
-      address: 'Calle Ejemplo 24',
-      allergens: ['Gluten', 'Lactosa', 'Frutos secos'],
-      description: 'Restaurante simulado para pruebas. Más adelante estos datos vendrán desde Firebase.',
-      phone: '123456789',              // ✅
-      website: 'https://www.google.com', // ✅
-      latitude: location.latitude + 0.001,
-      longitude: location.longitude + 0.001,
-    }
-    : null;
+  // 🚀 Obtener ubicación
+  useEffect(() => {
 
-  const handleGoHome = () => {
-    setMenuVisible(false);
-    navigation.navigate('Welcome');
-  };
-
-  const handleRefresh = () => {
-    setMenuVisible(false);
     getLocation();
-  };
 
-  const handleSearch = () => {
-    setMenuVisible(false);
-    console.log('Buscar restaurantes');
-  };
+  }, []);
 
+  // ⏳ Esperar ubicación
   if (!location) {
+
     return (
-      <View style={styles.centered}>
-        <Text style={styles.text}>
-          Pulsa el botón para obtener tu ubicación
-        </Text>
-
-        <Button title="Obtener ubicación" onPress={getLocation} />
-
-        <View style={styles.buttonContainer}>
-          <Button title="Volver" onPress={() => navigation.goBack()} />
-        </View>
-
-        {loading && <LoadingOverlay text="Obteniendo ubicación..." />}
-
-        {errorMsg && (
-          <Text style={styles.errorText}>
-            {errorMsg}
-          </Text>
-        )}
-      </View>
+      <LoadingOverlay
+        text="Obteniendo ubicación..."
+      />
     );
+
   }
+
+  // 🗺️ Región inicial
+  const mapRegion = {
+    latitude: location.latitude,
+    longitude: location.longitude,
+    latitudeDelta: 0.03,
+    longitudeDelta: 0.03,
+  };
+
+  // 🏠 Inicio
+  const handleGoHome = () => {
+
+    setMenuVisible(false);
+
+    navigation.navigate('Welcome');
+
+  };
+
+  // 🔄 Refresh
+  const handleRefresh = () => {
+
+    setMenuVisible(false);
+
+    getLocation();
+
+  };
+
+  // 🔍 Search
+  const handleSearch = () => {
+
+    setMenuVisible(false);
+
+    navigation.navigate('Search');
+
+  };
+
+  // 📄 Abrir detalles
+  const handleOpenDetails = () => {
+
+    if (!selectedRestaurant) {
+      return;
+    }
+
+    navigation.navigate(
+      'Detail',
+      {
+        restaurant:
+          selectedRestaurant,
+      }
+    );
+
+  };
 
   return (
     <View style={styles.container}>
+
+      {/* 🗺️ MAPA */}
       <MapView
         style={StyleSheet.absoluteFillObject}
-        region={{
-          latitude: location.latitude,
-          longitude: location.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }}
+        region={mapRegion}
         onPress={() => {
 
-          setBubbleVisible(false);
+          setSelectedRestaurant(null);
 
         }}
       >
+
+        {/* 📍 Usuario */}
         <Marker
           coordinate={{
             latitude: location.latitude,
@@ -99,117 +141,125 @@ export default function MapScreen({ navigation }) {
           </View>
         </Marker>
 
-        {fakeRestaurant && (
+        {/* 🍔 Restaurantes */}
+        {restaurants.map((restaurant) => (
+
           <Marker
+            key={restaurant.id}
             coordinate={{
-              latitude: fakeRestaurant.latitude,
-              longitude: fakeRestaurant.longitude,
+              latitude: restaurant.latitude,
+              longitude: restaurant.longitude,
             }}
             onPress={(e) => {
+
               e.stopPropagation();
-              console.log('Restaurante pulsado:', fakeRestaurant);
-              setBubbleVisible(true);
+
+              setSelectedRestaurant(
+                restaurant
+              );
+
             }}
           />
-        )}
+
+        ))}
+
       </MapView>
 
-      {bubbleVisible && fakeRestaurant && (
+      {/* 💬 POPUP */}
+      {selectedRestaurant && (
+
         <TouchableOpacity activeOpacity={1}>
+
           <View style={styles.restaurantBubble}>
-            <Text style={styles.bubbleTitle}>{fakeRestaurant.name}</Text>
+
+            <Text style={styles.bubbleTitle}>
+              {selectedRestaurant.name}
+            </Text>
 
             <Text style={styles.bubbleRating}>
-              ⭐ {fakeRestaurant.rating} / 5
+              ⭐ {selectedRestaurant.rating} / 5
             </Text>
 
             <Text style={styles.bubbleText}>
-              {fakeRestaurant.address}
+              {selectedRestaurant.address}
             </Text>
 
             <View style={styles.bubbleButtons}>
+
               <Button
                 title="Detalles"
-                onPress={() => {
-                  navigation.navigate('Detail', {
-                    restaurant: fakeRestaurant,
-                  });
-                }}
+                onPress={handleOpenDetails}
               />
 
               <Button
                 title="Cerrar"
-                onPress={() => setBubbleVisible(false)}
+                onPress={() =>
+                  setSelectedRestaurant(null)
+                }
               />
+
             </View>
 
             <View style={styles.bubbleArrow} />
+
           </View>
+
         </TouchableOpacity>
+
       )}
 
+      {/* ☰ MENÚ */}
       <TouchableOpacity
         style={styles.menuButton}
-        onPress={() => setMenuVisible(true)}
+        onPress={() =>
+          setMenuVisible(true)
+        }
       >
-        <Text style={styles.menuButtonText}>☰</Text>
+
+        <Text style={styles.menuButtonText}>
+          ☰
+        </Text>
+
       </TouchableOpacity>
 
       <SideMenu
         visible={menuVisible}
-        onClose={() => setMenuVisible(false)}
+        onClose={() =>
+          setMenuVisible(false)
+        }
         onGoHome={handleGoHome}
         onRefresh={handleRefresh}
         onSearch={handleSearch}
       />
 
-      <Modal
-        visible={detailsVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setDetailsVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {fakeRestaurant.name}
-            </Text>
+      {/* ⏳ LOADING */}
+      {loading && (
+        <LoadingOverlay
+          text="Actualizando ubicación..."
+        />
+      )}
 
-            <Text style={styles.modalRating}>
-              ⭐ Puntuación: {fakeRestaurant.rating} / 5
-            </Text>
+      {/* ❌ ERROR */}
+      {errorMsg && (
+        <View style={styles.errorContainer}>
 
-            <Text style={styles.modalText}>
-              📍 Dirección: {fakeRestaurant.address}
-            </Text>
+          <Text style={styles.errorText}>
+            {errorMsg}
+          </Text>
 
-            <Text style={styles.modalText}>
-              ⚠️ Alérgenos: {fakeRestaurant.allergens.join(', ')}
-            </Text>
-
-            <Text style={styles.modalDescription}>
-              {fakeRestaurant.description}
-            </Text>
-
-            <View style={styles.modalButton}>
-              <Button
-                title="Cerrar"
-                onPress={() => setDetailsVisible(false)}
-              />
-            </View>
-          </View>
         </View>
-      </Modal>
+      )}
 
-      {loading && <LoadingOverlay text="Actualizando ubicación..." />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
   },
+
   restaurantBubble: {
     position: 'absolute',
     top: 120,
@@ -223,24 +273,28 @@ const styles = StyleSheet.create({
     zIndex: 6,
     elevation: 6,
   },
+
   bubbleTitle: {
     fontSize: 17,
     fontWeight: 'bold',
     marginBottom: 6,
   },
+
   bubbleRating: {
     fontSize: 15,
     marginBottom: 6,
   },
+
   bubbleText: {
     fontSize: 14,
     marginBottom: 10,
   },
+
   bubbleButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 8,
   },
+
   bubbleArrow: {
     position: 'absolute',
     bottom: -10,
@@ -253,24 +307,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#ddd',
   },
-  centered: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  errorText: {
-    color: 'red',
-    marginTop: 10,
-  },
-  buttonContainer: {
-    marginTop: 10,
-    width: '100%',
-  },
+
   menuButton: {
     position: 'absolute',
     top: 50,
@@ -284,76 +321,12 @@ const styles = StyleSheet.create({
     zIndex: 5,
     elevation: 5,
   },
+
   menuButtonText: {
     fontSize: 28,
     fontWeight: 'bold',
   },
-  calloutContainer: {
-    width: 220,
-    padding: 12,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  calloutTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 6,
-  },
-  calloutRating: {
-    fontSize: 14,
-    marginBottom: 6,
-  },
-  calloutText: {
-    fontSize: 13,
-    marginBottom: 10,
-  },
-  detailsButton: {
-    backgroundColor: '#222',
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  detailsButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modalContent: {
-    width: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  modalRating: {
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  modalText: {
-    fontSize: 15,
-    marginBottom: 8,
-  },
-  modalDescription: {
-    fontSize: 14,
-    marginTop: 10,
-    marginBottom: 16,
-    lineHeight: 20,
-  },
-  modalButton: {
-    marginTop: 8,
-  },
+
   userMarker: {
     width: 26,
     height: 26,
@@ -371,4 +344,20 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: '#ffffff',
   },
+
+  errorContainer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    right: 20,
+    backgroundColor: '#ffdddd',
+    padding: 12,
+    borderRadius: 12,
+  },
+
+  errorText: {
+    color: '#aa0000',
+    textAlign: 'center',
+  },
+
 });
