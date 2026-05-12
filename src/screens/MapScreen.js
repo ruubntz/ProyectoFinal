@@ -1,37 +1,21 @@
-import {
-  useState,
-  useEffect,
-} from 'react';
-
-import {
-  StyleSheet,
-  View,
-  Button,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
-
-import MapView, {
-  Marker,
-} from 'react-native-maps';
-
+import { useState, useEffect, } from 'react';
+import { StyleSheet, View, Button, Text, TouchableOpacity, } from 'react-native';
+import MapView, { Marker, } from 'react-native-maps';
 import useLocation from '../hooks/useLocation';
 import LoadingOverlay from '../components/ui/LoadingOverlay';
-import SideMenu from '../navigation/SideMenu';
+import SideMenu from '../components/navigation/SideMenu';
 
-// 📦 Base de datos fallback
-import restaurantsData from '../data/restaurantes';
 
-export default function MapScreen({
-  navigation,
-  route,
-}) {
+// Base de datos fallback
+// import restaurantsData from '../data/restaurantes';
+import { useSelector } from 'react-redux';
 
-  const [menuVisible, setMenuVisible] =
-    useState(false);
 
-  const [selectedRestaurant, setSelectedRestaurant] =
-    useState(null);
+export default function MapScreen({ navigation, route, }) {
+
+  const [menuVisible, setMenuVisible] = useState(false);
+
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
 
   const {
     location,
@@ -40,10 +24,14 @@ export default function MapScreen({
     getLocation,
   } = useLocation();
 
-  // 🍔 Restaurantes recibidos
-  const restaurants =
-    route?.params?.restaurants ||
-    restaurantsData;
+
+  //// 🍔 Restaurantes recibidos
+  //const restaurants = route?.params?.restaurants || restaurantsData;
+
+  // Restaurantes de redux
+  const reduxRestaurants = useSelector(state => state.restaurants.restaurants);
+  const restaurants = route?.params?.restaurants || reduxRestaurants;
+
 
   // 🚀 Obtener ubicación
   useEffect(() => {
