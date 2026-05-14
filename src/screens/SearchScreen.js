@@ -1,16 +1,11 @@
 import { useState } from 'react';
+import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, } from 'react-native';
 
-import {
-    View,
-    Text,
-    StyleSheet,
-    TextInput,
-    FlatList,
-    TouchableOpacity,
-} from 'react-native';
 
-// 📦 Base de datos local
-import restaurants from '../data/restaurantes';
+// Base de datos local
+// import restaurants from '../data/restaurantes';
+import { useSelector } from 'react-redux';
+
 
 export default function SearchScreen({ navigation }) {
 
@@ -22,6 +17,10 @@ export default function SearchScreen({ navigation }) {
 
     // ⚠️ Filtro gluten
     const [glutenFreeOnly, setGlutenFreeOnly] = useState(false);
+
+
+    // Restaurantes de Redux
+    const restaurants = useSelector(state => state.restaurants.restaurants);
 
     // 🔎 Filtrado restaurantes
     const filteredRestaurants = restaurants.filter((restaurant) => {
@@ -53,6 +52,8 @@ export default function SearchScreen({ navigation }) {
             matchesGluten
         );
     });
+
+
 
     // 🍔 Render restaurante
     const renderRestaurant = ({ item }) => (
