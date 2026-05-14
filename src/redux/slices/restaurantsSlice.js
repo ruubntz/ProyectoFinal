@@ -2,6 +2,8 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import restaurantsData from '../../data/restaurantes';
 
+
+
 const initialState = {
 
     restaurants: restaurantsData,
