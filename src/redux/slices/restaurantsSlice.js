@@ -1,64 +1,38 @@
-import { createSlice } from '@reduxjs/toolkit';
-
-import restaurantsData from '../../data/restaurantes';
+import {
+    createSlice,
+} from '@reduxjs/toolkit';
 
 const initialState = {
 
-    restaurants: restaurantsData,
-
-    loading: false,
-
-    error: null,
+    restaurants: [],
 
 };
 
-const restaurantsSlice = createSlice({
+const restaurantsSlice =
+    createSlice({
 
-    name: 'restaurants',
+        name: 'restaurants',
 
-    initialState,
+        initialState,
 
-    reducers: {
+        reducers: {
 
-        setRestaurants: (
-            state,
-            action
-        ) => {
+            // 🍔 Guardar restaurantes
+            setRestaurants:
+                (state, action) => {
 
-            state.restaurants =
-                action.payload;
+                    state.restaurants =
+                        action.payload;
 
-        },
-
-        setLoading: (
-            state,
-            action
-        ) => {
-
-            state.loading =
-                action.payload;
+                },
 
         },
 
-        setError: (
-            state,
-            action
-        ) => {
-
-            state.error =
-                action.payload;
-
-        },
-
-    },
-
-});
+    });
 
 export const {
 
     setRestaurants,
-    setLoading,
-    setError,
 
 } = restaurantsSlice.actions;
 

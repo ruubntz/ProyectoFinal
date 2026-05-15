@@ -1,26 +1,16 @@
 import { useState } from 'react';
+import { useSelector, useDispatch, } from 'react-redux';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, } from 'react-native';
 
-import {
-    View,
-    Text,
-    StyleSheet,
-    ScrollView,
-    TouchableOpacity,
-    Linking,
-} from 'react-native';
+import { addComment, } from '../redux/slices/commentsSlice';
+import { toggleFavorite, } from '../redux/slices/favoritesSlice';
 
-export default function RestaurantDetailScreen({
-    route,
-    navigation,
-}) {
+import CommentModal from '../components/restaurant/CommentModal';
 
-    const restaurant =
-        route?.params?.restaurant;
 
-    console.log(
-        'Restaurant recibido:',
-        restaurant
-    );
+export default function RestaurantDetailScreen({ route, navigation, }) {
+
+    const restaurant = route?.params?.restaurant;
 
     // 🛡️ Protección
     if (!restaurant) {
@@ -37,26 +27,29 @@ export default function RestaurantDetailScreen({
 
     }
 
-    const [activeTab, setActiveTab] =
-        useState('details');
+    const dispatch = useDispatch();
 
-    // 🟢 Comentarios fake
-    const comments = [
-        {
-            id: 1,
-            text: 'Muy buen sitio!',
-            rating: 5,
-            author: 'Juan',
-            date: new Date(),
-        },
-        {
-            id: 2,
-            text: 'Servicio rápido y comida excelente',
-            rating: 4,
-            author: 'María',
-            date: new Date(),
-        },
-    ];
+    // ❤️ Favoritos
+    const favorites = useSelector(state => state.favorites.favorites);
+
+    const isFavorite = favorites.includes(restaurant.id);
+
+    // 💬 Comentarios Redux
+    const comments = useSelector(state => state.comments.comments);
+
+    const restaurantComments = comments.filter(comment => comment.restaurantId === restaurant.id);
+
+    // 🔘 Tabs
+    const [activeTab, setActiveTab] = useState('details');
+
+    // 💬 Modal comentario
+    const [showCommentForm, setShowCommentForm,] = useState(false);
+
+    const [author, setAuthor] = useState('');
+
+    const [commentText, setCommentText,] = useState('');
+
+    const [rating, setRating] = useState(5);
 
     // 📞 Llamada
     const handleCall = () => {
@@ -71,7 +64,7 @@ export default function RestaurantDetailScreen({
 
     };
 
-    // 🌐 Página web
+    // 🌐 Web
     const handleWebsite = () => {
 
         if (!restaurant.website) {
@@ -84,20 +77,62 @@ export default function RestaurantDetailScreen({
 
     };
 
+    // ♻️ Reset formulario
+    const resetCommentForm = () => {
+
+        setAuthor('');
+        setCommentText('');
+        setRating(5);
+
+    };
+
+    // 💾 Enviar comentario
+    const handleSubmitComment = () => {
+
+        dispatch(
+            addComment({
+                id: Date.now(),
+                restaurantId:
+                    restaurant.id,
+                author,
+                text: commentText,
+                rating,
+                date:
+                    new Date().toISOString(),
+            })
+        );
+
+        resetCommentForm();
+
+        setShowCommentForm(false);
+
+    };
+
+    // ❌ Cerrar modal
+    const handleCloseModal = () => {
+
+        resetCommentForm();
+
+        setShowCommentForm(false);
+
+    };
+
     // 💬 Render comentario
     const renderComment = (comment) => {
 
         const formattedDate =
-            comment.date.toLocaleDateString(
-                'es-ES',
-                {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                }
-            );
+            new Date(comment.date)
+                .toLocaleDateString(
+                    'es-ES',
+                    {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                    }
+                );
 
         return (
+
             <View
                 key={comment.id}
                 style={styles.comment}
@@ -118,23 +153,25 @@ export default function RestaurantDetailScreen({
                 <View style={styles.divider} />
 
             </View>
+
         );
+
     };
 
     return (
+
         <ScrollView style={styles.container}>
 
             {/* 🟣 Card principal */}
             <View style={styles.card}>
 
                 <Text style={styles.title}>
-                    {restaurant.name || 'Sin nombre'}
+                    {restaurant.name}
                 </Text>
 
                 <Text style={styles.description}>
                     {
-                        restaurant.description ||
-                        'Sin descripción disponible'
+                        restaurant.description
                     }
                 </Text>
 
@@ -143,14 +180,19 @@ export default function RestaurantDetailScreen({
 
                     <TouchableOpacity
                         onPress={() =>
-                            setActiveTab('details')
+                            setActiveTab(
+                                'details'
+                            )
                         }
                     >
 
                         <Text
                             style={[
                                 styles.tabText,
-                                activeTab === 'details' &&
+
+                                activeTab ===
+                                'details' &&
+
                                 styles.activeTab,
                             ]}
                         >
@@ -161,14 +203,19 @@ export default function RestaurantDetailScreen({
 
                     <TouchableOpacity
                         onPress={() =>
-                            setActiveTab('contact')
+                            setActiveTab(
+                                'contact'
+                            )
                         }
                     >
 
                         <Text
                             style={[
                                 styles.tabText,
-                                activeTab === 'contact' &&
+
+                                activeTab ===
+                                'contact' &&
+
                                 styles.activeTab,
                             ]}
                         >
@@ -179,117 +226,187 @@ export default function RestaurantDetailScreen({
 
                 </View>
 
-                {/* 🧩 Contenido dinámico */}
+                {/* 🧩 Contenido */}
                 <View style={styles.tabContent}>
 
-                    {activeTab === 'details' && (
-                        <>
+                    {activeTab ===
+                        'details' && (
 
-                            <Text>
-                                ⭐ {
-                                    restaurant.rating ||
-                                    'Sin rating'
-                                } / 5
-                            </Text>
+                            <>
 
-                            <Text>
-                                📍 {
-                                    restaurant.address ||
-                                    'Dirección no disponible'
-                                }
-                            </Text>
-
-                            <Text>
-                                ⚠️ {
-                                    restaurant.allergens?.length > 0
-                                        ? restaurant.allergens.join(', ')
-                                        : 'Sin alérgenos'
-                                }
-                            </Text>
-
-                            {/* 📍 Ver mapa */}
-                            <TouchableOpacity
-                                style={styles.mapButton}
-                                onPress={() => {
-
-                                    navigation.navigate(
-                                        'Map',
-                                        {
-                                            restaurants: [
-                                                restaurant,
-                                            ],
-                                        }
-                                    );
-
-                                }}
-                            >
-
-                                <Text style={styles.mapButtonText}>
-                                    📍 Ver en mapa
+                                <Text>
+                                    ⭐ {restaurant.rating} / 5
                                 </Text>
 
-                            </TouchableOpacity>
+                                <Text>
+                                    📍 {restaurant.address}
+                                </Text>
 
-                        </>
-                    )}
+                                <Text>
+
+                                    ⚠️ {
+
+                                        restaurant.allergens
+                                            ?.length > 0
+
+                                            ? restaurant
+                                                .allergens
+                                                .join(', ')
+
+                                            : 'Sin alérgenos'
+                                    }
+
+                                </Text>
+
+                                {/* 📍 Mapa */}
+                                <TouchableOpacity
+                                    style={styles.mapButton}
+                                    onPress={() => {
+
+                                        navigation.navigate(
+                                            'Map',
+                                            {
+                                                restaurants: [
+                                                    restaurant,
+                                                ],
+                                            }
+                                        );
+
+                                    }}
+                                >
+
+                                    <Text
+                                        style={
+                                            styles.mapButtonText
+                                        }
+                                    >
+                                        📍 Ver en mapa
+                                    </Text>
+
+                                </TouchableOpacity>
+
+                            </>
+
+                        )}
 
                     {/* ☎️ Contacto */}
-                    {activeTab === 'contact' && (
-                        <>
+                    {activeTab ===
+                        'contact' && (
 
-                            <Text
-                                onPress={handleCall}
-                                style={styles.link}
-                            >
-                                📞 {
-                                    restaurant.phone ||
-                                    'No disponible'
-                                }
-                            </Text>
+                            <>
 
-                            <Text
-                                onPress={handleWebsite}
-                                style={styles.link}
-                            >
-                                🌐 {
-                                    restaurant.website ||
-                                    'No disponible'
-                                }
-                            </Text>
+                                <Text
+                                    onPress={handleCall}
+                                    style={styles.link}
+                                >
 
-                        </>
-                    )}
+                                    📞 {
+                                        restaurant.phone ||
+                                        'No disponible'
+                                    }
+
+                                </Text>
+
+                                <Text
+                                    onPress={handleWebsite}
+                                    style={styles.link}
+                                >
+
+                                    🌐 {
+                                        restaurant.website ||
+                                        'No disponible'
+                                    }
+
+                                </Text>
+
+                            </>
+
+                        )}
 
                 </View>
 
                 {/* ❤️ Acciones */}
                 <View style={styles.actions}>
 
-                    <Text style={styles.icon}>
-                        ♡
-                    </Text>
+                    {/* ❤️ Favorito */}
+                    <TouchableOpacity
+                        onPress={() => {
 
-                    <Text style={styles.icon}>
-                        ✎
-                    </Text>
+                            dispatch(
+                                toggleFavorite(
+                                    restaurant.id
+                                )
+                            );
+
+                        }}
+                    >
+
+                        <Text style={styles.icon}>
+
+                            {
+                                isFavorite
+                                    ? '❤️'
+                                    : '🤍'
+                            }
+
+                        </Text>
+
+                    </TouchableOpacity>
+
+                    {/* ✏️ Comentario */}
+                    <TouchableOpacity
+                        onPress={() =>
+                            setShowCommentForm(true)
+                        }
+                    >
+
+                        <Text style={styles.icon}>
+                            ✎
+                        </Text>
+
+                    </TouchableOpacity>
 
                 </View>
 
             </View>
 
-            {/* 🟢 Comentarios */}
+            {/* 💬 Comentarios */}
             <View style={styles.card}>
 
                 <Text style={styles.commentsTitle}>
                     Comentarios
                 </Text>
 
-                {comments.map(renderComment)}
+                {restaurantComments.map(
+                    renderComment
+                )}
 
             </View>
 
+            {/* 💬 Modal */}
+            <CommentModal
+
+                visible={showCommentForm}
+
+                onClose={handleCloseModal}
+
+                onSubmit={handleSubmitComment}
+
+                author={author}
+                setAuthor={setAuthor}
+
+                commentText={commentText}
+                setCommentText={setCommentText}
+
+                rating={rating}
+                setRating={setRating}
+
+            />
+
         </ScrollView>
+
     );
+
 }
 
 const styles = StyleSheet.create({

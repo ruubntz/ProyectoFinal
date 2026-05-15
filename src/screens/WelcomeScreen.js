@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import {
   View,
   Button,
@@ -5,27 +7,85 @@ import {
   Image,
 } from 'react-native';
 
+import AuthModal from '../components/auth/authModal';
+
+import { useEffect } from 'react';
+
+import {
+  useDispatch,
+} from 'react-redux';
+
+import {
+  setRestaurants,
+} from '../redux/slices/restaurantsSlice';
+
+import {
+  getRestaurants,
+} from '../services/restaurantService';
+
+
+
 export default function WelcomeScreen({
   navigation,
 }) {
 
+  const dispatch =
+    useDispatch();
+
+  useEffect(() => {
+
+    const loadRestaurants =
+      async () => {
+
+        const restaurants =
+          await getRestaurants();
+
+        dispatch(
+          setRestaurants(
+            restaurants
+          )
+        );
+
+        //console.log('Restaurants loaded:', restaurants );
+
+      };
+
+    loadRestaurants();
+
+  }, []);
+
+  // 🔐 Modal auth
+  const [
+    showAuthModal,
+    setShowAuthModal,
+  ] = useState(false);
+
+  // 👤 Invitado
   const handleGuestAccess = () => {
 
     navigation.navigate('Search');
 
   };
 
-  const handleLogin = () => {
+  // 🔐 Abrir auth
+  const handleOpenAuth = () => {
 
-    console.log(
-      'Aquí abriremos el modal de login más adelante'
-    );
+    setShowAuthModal(true);
+
+  };
+
+  // ❌ Cerrar auth
+  const handleCloseAuth = () => {
+
+    setShowAuthModal(false);
 
   };
 
   return (
+
     <View style={styles.container}>
 
+      {/* 🖼️ Logo */}
       <View style={styles.logoBox}>
 
         <Image
@@ -36,15 +96,17 @@ export default function WelcomeScreen({
 
       </View>
 
+      {/* 🔐 Login */}
       <View style={styles.buttonContainer}>
 
         <Button
           title="Iniciar sesión"
-          onPress={handleLogin}
+          onPress={handleOpenAuth}
         />
 
       </View>
 
+      {/* 👤 Invitado */}
       <View style={styles.buttonContainer}>
 
         <Button
@@ -54,8 +116,16 @@ export default function WelcomeScreen({
 
       </View>
 
+      {/* 🔐 Modal auth */}
+      <AuthModal
+        visible={showAuthModal}
+        onClose={handleCloseAuth}
+      />
+
     </View>
+
   );
+
 }
 
 const styles = StyleSheet.create({
