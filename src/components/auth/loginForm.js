@@ -16,6 +16,22 @@ import { setUser } from '../../redux/slices/userSlice';
 
 import { loginUser } from '../../services/authService';
 
+import {
+    getFavorites,
+} from '../../services/favoritesService';
+
+import {
+    setFavorites,
+} from '../../redux/slices/favoritesSlice';
+
+import {
+    getUserRatings,
+} from '../../services/ratingsService';
+
+import {
+    setRatings,
+} from '../../redux/slices/ratingsSlice';
+
 export default function LoginForm({
     onClose,
 }) {
@@ -54,6 +70,22 @@ export default function LoginForm({
                     email: user.email,
                 })
             );
+
+
+            const favorites =
+                await getFavorites();
+
+            dispatch(
+                setFavorites(favorites)
+            );
+
+            const ratings =
+                await getUserRatings();
+
+            dispatch(
+                setRatings(ratings)
+            );
+
 
             //console.log( 'Redux actualizado' );
 

@@ -23,6 +23,22 @@ import {
   getRestaurants,
 } from '../services/restaurantService';
 
+import {
+  getFavorites,
+} from '../services/favoritesService';
+
+import {
+  setFavorites,
+} from '../redux/slices/favoritesSlice';
+
+import {
+  getComments,
+} from '../services/commentsService';
+
+import {
+  setComments,
+} from '../redux/slices/commentsSlice';
+
 
 
 export default function WelcomeScreen({
@@ -44,6 +60,13 @@ export default function WelcomeScreen({
           setRestaurants(
             restaurants
           )
+        );
+
+        const comments =
+          await getComments();
+
+        dispatch(
+          setComments(comments)
         );
 
         //console.log('Restaurants loaded:', restaurants );

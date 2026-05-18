@@ -46,6 +46,16 @@ const favoritesSlice = createSlice({
 
         },
 
+        setFavorites: (
+            state,
+            action
+        ) => {
+
+            state.favorites =
+                action.payload;
+
+        },
+
     },
 
 });
@@ -53,6 +63,7 @@ const favoritesSlice = createSlice({
 export const {
 
     toggleFavorite,
+    setFavorites,
 
 } = favoritesSlice.actions;
 

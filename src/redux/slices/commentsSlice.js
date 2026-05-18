@@ -1,5 +1,5 @@
 import { createSlice }
-from '@reduxjs/toolkit';
+    from '@reduxjs/toolkit';
 
 const initialState = {
 
@@ -50,7 +50,7 @@ const commentsSlice = createSlice({
 
         },
 
-        removeComment: (
+        deleteComment: (
             state,
             action
         ) => {
@@ -64,6 +64,17 @@ const commentsSlice = createSlice({
 
         },
 
+
+        setComments: (
+            state,
+            action
+        ) => {
+
+            state.comments =
+                action.payload;
+
+        },
+
     },
 
 });
@@ -71,7 +82,8 @@ const commentsSlice = createSlice({
 export const {
 
     addComment,
-    removeComment,
+    deleteComment,
+    setComments,
 
 } = commentsSlice.actions;
 

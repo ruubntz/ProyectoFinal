@@ -2,10 +2,21 @@ import { useState } from 'react';
 import { useSelector, useDispatch, } from 'react-redux';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, } from 'react-native';
 
-import { addComment, } from '../redux/slices/commentsSlice';
 import { toggleFavorite, } from '../redux/slices/favoritesSlice';
+import { addFavorite, removeFavorite, } from '../services/favoritesService';
+
+import { saveRating, } from '../services/ratingsService';
+import { setRating, } from '../redux/slices/ratingsSlice';
 
 import CommentModal from '../components/restaurant/CommentModal';
+import { saveComment, getComments, } from '../services/commentsService';
+import { addComment, setComments, deleteComment, } from '../redux/slices/commentsSlice';
+import { deleteComment as deleteCommentFirebase,} from '../services/commentsService';
+
+import { auth, } from '../services/firebase';
+
+
+
 
 
 export default function RestaurantDetailScreen({ route, navigation, }) {
@@ -49,7 +60,7 @@ export default function RestaurantDetailScreen({ route, navigation, }) {
 
     const [commentText, setCommentText,] = useState('');
 
-    const [rating, setRating] = useState(5);
+    const [rating, setLocalRating] = useState(5);
 
     // 📞 Llamada
     const handleCall = () => {
@@ -82,29 +93,71 @@ export default function RestaurantDetailScreen({ route, navigation, }) {
 
         setAuthor('');
         setCommentText('');
-        setRating(5);
+        setLocalRating(5);
 
     };
 
     // 💾 Enviar comentario
-    const handleSubmitComment = () => {
+    const handleSubmitComment = async () => {
 
-        dispatch(
-            addComment({
-                id: Date.now(),
+        try {
+
+            await saveComment({
+
                 restaurantId:
                     restaurant.id,
+
                 author,
-                text: commentText,
+
+                text:
+                    commentText,
+
                 rating,
+
                 date:
                     new Date().toISOString(),
-            })
-        );
 
-        resetCommentForm();
+            });
 
-        setShowCommentForm(false);
+            const updatedComments =
+                await getComments();
+
+            dispatch(
+                setComments(
+                    updatedComments
+                )
+            );
+
+            dispatch(
+
+                setRating({
+
+                    restaurantId:
+                        restaurant.id,
+
+                    rating,
+
+                })
+
+            );
+
+            await saveRating(
+                restaurant.id,
+                rating
+            );
+
+            resetCommentForm();
+
+            setShowCommentForm(false);
+
+        } catch (error) {
+
+            console.log(
+                'ERROR SUBMIT COMMENT:',
+                error
+            );
+
+        }
 
     };
 
@@ -149,6 +202,38 @@ export default function RestaurantDetailScreen({ route, navigation, }) {
                 <Text style={styles.commentAuthor}>
                     -- {comment.author}, {formattedDate}
                 </Text>
+
+                {
+                    auth.currentUser?.uid ===
+                    comment.userId && (
+
+                        <TouchableOpacity
+                            onPress={async () => {
+
+                                await deleteCommentFirebase(
+                                    comment.id
+                                );
+
+                                const updatedComments =
+                                    await getComments();
+
+                                dispatch(
+                                    setComments(
+                                        updatedComments
+                                    )
+                                );
+
+                            }}
+                        >
+
+                            <Text style={styles.deleteText}>
+                                🗑️ Eliminar
+                            </Text>
+
+                        </TouchableOpacity>
+
+                    )
+                }
 
                 <View style={styles.divider} />
 
@@ -330,13 +415,28 @@ export default function RestaurantDetailScreen({ route, navigation, }) {
 
                     {/* ❤️ Favorito */}
                     <TouchableOpacity
-                        onPress={() => {
+                        onPress={async () => {
 
                             dispatch(
                                 toggleFavorite(
                                     restaurant.id
                                 )
                             );
+
+                            if (isFavorite) {
+
+                                await removeFavorite(
+                                    restaurant.id
+                                );
+
+                            }
+                            else {
+
+                                await addFavorite(
+                                    restaurant.id
+                                );
+
+                            }
 
                         }}
                     >
@@ -399,7 +499,7 @@ export default function RestaurantDetailScreen({ route, navigation, }) {
                 setCommentText={setCommentText}
 
                 rating={rating}
-                setRating={setRating}
+                setRating={setLocalRating}
 
             />
 
@@ -527,6 +627,12 @@ const styles = StyleSheet.create({
         height: 1,
         backgroundColor: '#ddd',
         marginTop: 8,
+    },
+    deleteText: {
+        color: 'red',
+        marginTop: 6,
+        fontSize: 12,
+        textAlign: 'right',
     },
 
 });
