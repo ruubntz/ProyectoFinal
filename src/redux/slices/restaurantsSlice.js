@@ -1,6 +1,6 @@
-import {
-    createSlice,
-} from '@reduxjs/toolkit';
+import { createSlice, } from '@reduxjs/toolkit';
+
+
 
 const initialState = {
 
@@ -8,27 +8,23 @@ const initialState = {
 
 };
 
-const restaurantsSlice =
-    createSlice({
+const restaurantsSlice = createSlice({
 
-        name: 'restaurants',
+    name: 'restaurants',
+    initialState,
+    reducers: {
 
-        initialState,
+        //  Guardar restaurantes
+        setRestaurants:
+            (state, action) => {
 
-        reducers: {
+                state.restaurants = action.payload;
 
-            // 🍔 Guardar restaurantes
-            setRestaurants:
-                (state, action) => {
+            },
 
-                    state.restaurants =
-                        action.payload;
+    },
 
-                },
-
-        },
-
-    });
+});
 
 export const {
 

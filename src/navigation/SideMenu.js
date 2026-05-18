@@ -1,12 +1,12 @@
 import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 
-export default function SideMenu({
-  visible,
-  onClose,
-  onGoHome,
-  onRefresh,
-  onSearch,
-}) {
+
+
+
+
+export default function SideMenu({ visible, onClose, onGoHome, onRefresh, onSearch, }) {
+
+
   if (!visible) return null;
 
   return (

@@ -1,139 +1,83 @@
-import {
-    ref,
-    push,
-    get,
-    remove,
-} from 'firebase/database';
+import { ref, push, get, remove, } from 'firebase/database';
+import { auth, database, } from './firebase';
 
-import {
-    auth,
-    database,
-} from './firebase';
 
-// 💾 Guardar comentario
-export const saveComment =
-    async ({
-        restaurantId,
-        author,
-        text,
-        rating,
-        date,
-    }) => {
 
-        try {
 
-            const user =
-                auth.currentUser;
 
-            if (!user) {
-                return;
-            }
+//  Guardar comentario
+export const saveComment = async ({ restaurantId, author, text, rating, date, }) => {
 
-            await push(
+    try {
 
-                ref(
-                    database,
-                    'comments'
-                ),
 
-                {
-                    userId:
-                        user.uid,
+        // Check Usuario
+        const user = auth.currentUser;
+        if (!user) { return; }
 
-                    restaurantId,
+        // Push a DDBB
+        await push(
+            ref(database, 'comments'), { userId: user.uid, restaurantId, author, text, rating, date, }
+        );
 
-                    author,
 
-                    text,
+    } catch (error) {
 
-                    rating,
+        console.log(
+            'ERROR SAVE COMMENT:',
+            error
+        );
 
-                    date,
-                }
+    }
 
-            );
+};
 
-        } catch (error) {
+//  Obtener comentarios
+export const getComments = async () => {
 
-            console.log(
-                'ERROR SAVE COMMENT:',
-                error
-            );
+    try {
 
-        }
+        const snapshot = await get(ref(database, 'comments'));
 
-    };
-
-// 📥 Obtener comentarios
-export const getComments =
-    async () => {
-
-        try {
-
-            const snapshot =
-                await get(
-
-                    ref(
-                        database,
-                        'comments'
-                    )
-
-                );
-
-            if (!snapshot.exists()) {
-                return [];
-            }
-
-            const data =
-                snapshot.val();
-
-            return Object.entries(data).map(
-
-                ([id, comment]) => ({
-
-                    id,
-
-                    ...comment,
-
-                })
-
-            );
-
-        } catch (error) {
-
-            console.log(
-                'ERROR GET COMMENTS:',
-                error
-            );
-
+        if (!snapshot.exists()) {
             return [];
-
         }
 
-    };
+        const data = snapshot.val();
 
-// 🗑️ Eliminar comentario
-export const deleteComment =
-    async (commentId) => {
+        return Object.entries(data).map(
+            ([id, comment]) => ({ id, ...comment, })
+        );
 
-        try {
 
-            await remove(
+    } catch (error) {
 
-                ref(
-                    database,
-                    `comments/${commentId}`
-                )
+        console.log(
+            'ERROR GET COMMENTS:',
+            error
+        );
 
-            );
+        return [];
 
-        } catch (error) {
+    }
 
-            console.log(
-                'ERROR DELETE COMMENT:',
-                error
-            );
+};
 
-        }
+//  Eliminar comentario
+export const deleteComment = async (commentId) => {
 
-    };
+    try {
+
+        await remove(ref(database, `comments/${commentId}`));
+
+
+    } catch (error) {
+
+        console.log(
+            'ERROR DELETE COMMENT:',
+            error
+        );
+
+    }
+
+};

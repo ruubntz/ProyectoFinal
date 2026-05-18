@@ -1,61 +1,37 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, } from 'react-native';
-
-
-// Base de datos local
-// import restaurants from '../data/restaurantes';
 import { useSelector } from 'react-redux';
+
 
 
 export default function SearchScreen({ navigation }) {
 
-    // 🔍 Texto búsqueda
     const [searchText, setSearchText] = useState('');
-
-    // ⭐ Rating mínimo
     const [minRating, setMinRating] = useState(0);
-
-    // ⚠️ Filtro gluten
     const [glutenFreeOnly, setGlutenFreeOnly] = useState(false);
-
-
-    // Restaurantes de Redux
     const restaurants = useSelector(state => state.restaurants.restaurants);
 
-    // 🔎 Filtrado restaurantes
+
+    //  Filtrado restaurantes
     const filteredRestaurants = restaurants.filter((restaurant) => {
 
-        // 🔍 Buscar por nombre o categoría
-        const matchesSearch =
+        // Buscar por nombre o categoría
+        const matchesSearch = restaurant.name.toLowerCase().includes(searchText.toLowerCase()) || restaurant.categories.join(' ').toLowerCase().includes(searchText.toLowerCase());
 
-            restaurant.name
-                .toLowerCase()
-                .includes(searchText.toLowerCase()) ||
+        // Rating mínimo
+        const matchesRating = restaurant.rating >= minRating;
 
-            restaurant.categories
-                .join(' ')
-                .toLowerCase()
-                .includes(searchText.toLowerCase());
+        // Sin gluten
+        const matchesGluten = !glutenFreeOnly || !restaurant.allergens.includes('Gluten');
 
-        // ⭐ Rating mínimo
-        const matchesRating =
-            restaurant.rating >= minRating;
 
-        // ⚠️ Sin gluten
-        const matchesGluten =
-            !glutenFreeOnly ||
-            !restaurant.allergens.includes('Gluten');
-
-        return (
-            matchesSearch &&
-            matchesRating &&
-            matchesGluten
-        );
+        // Devolvemos la lista filtrada
+        return (matchesSearch && matchesRating && matchesGluten);
     });
 
 
 
-    // 🍔 Render restaurante
+    //  Render restaurante
     const renderRestaurant = ({ item }) => (
 
         <TouchableOpacity
@@ -85,11 +61,7 @@ export default function SearchScreen({ navigation }) {
             </Text>
 
             <Text style={styles.restaurantAllergens}>
-                ⚠️ {
-                    item.allergens.length > 0
-                        ? item.allergens.join(', ')
-                        : 'Sin alérgenos'
-                }
+                ⚠️ {item.allergens.length > 0 ? item.allergens.join(', ') : 'Sin alérgenos'}
             </Text>
 
         </TouchableOpacity>
@@ -110,11 +82,7 @@ export default function SearchScreen({ navigation }) {
                 onPress={() => {
 
                     navigation.navigate(
-                        'Map',
-                        {
-                            restaurants:
-                                filteredRestaurants,
-                        }
+                        'Map', { restaurants: filteredRestaurants, }
                     );
 
                 }}

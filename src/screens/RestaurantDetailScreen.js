@@ -9,9 +9,8 @@ import { saveRating, } from '../services/ratingsService';
 import { setRating, } from '../redux/slices/ratingsSlice';
 
 import CommentModal from '../components/restaurant/CommentModal';
-import { saveComment, getComments, } from '../services/commentsService';
 import { addComment, setComments, deleteComment, } from '../redux/slices/commentsSlice';
-import { deleteComment as deleteCommentFirebase,} from '../services/commentsService';
+import { saveComment, getComments, deleteComment as deleteCommentFirebase, } from '../services/commentsService';
 
 import { auth, } from '../services/firebase';
 

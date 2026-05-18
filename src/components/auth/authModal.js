@@ -1,23 +1,18 @@
 import { useState } from 'react';
-
-import {
-    Modal,
-    View,
-    StyleSheet,
-    TouchableOpacity,
-    Text,
-} from 'react-native';
+import { Modal, View, StyleSheet, TouchableOpacity, Text, } from 'react-native';
 
 import LoginForm from './loginForm';
 import RegisterForm from './registerForm';
 
-export default function AuthModal({
-    visible,
-    onClose,
-}) {
 
-    const [isLogin, setIsLogin] =
-        useState(true);
+
+
+
+export default function AuthModal({ visible, onClose, }) {
+
+
+    const [isLogin, setIsLogin] = useState(true);
+
 
     return (
 

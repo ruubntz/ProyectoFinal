@@ -1,101 +1,58 @@
-import {
-    ref,
-    set,
-    get,
-} from 'firebase/database';
+import { ref, set, get, } from 'firebase/database';
+import { auth, database, } from './firebase';
 
-import {
-    auth,
-    database,
-} from './firebase';
 
-// ⭐ Guardar rating
-export const saveRating =
-    async (
-        restaurantId,
-        rating
-    ) => {
 
-        try {
+//  Guardar rating
+export const saveRating = async (restaurantId, rating) => {
 
-            console.log(
-                'SAVE RATING:',
-                restaurantId,
-                rating
-            );
+    try {
 
-            const user =
-                auth.currentUser;
+        //console.log( 'SAVE RATING:', restaurantId, rating );
 
-            if (!user) {
-                return;
-            }
+        // Check Usuario
+        const user = auth.currentUser;
+        if (!user) { return; }
 
-            console.log(
-                'CURRENT USER:',
-                auth.currentUser
-            );
+        //console.log('CURRENT USER:', auth.currentUser );
 
-            await set(
+        await set(ref(database, `ratings/${user.uid}/${restaurantId}`), rating);
 
-                ref(
-                    database,
-                    `ratings/${user.uid}/${restaurantId}`
-                ),
+    } catch (error) {
 
-                rating
+        console.log(
+            'ERROR SAVE RATING:',
+            error
+        );
 
-            );
+    }
 
-        } catch (error) {
+};
 
-            console.log(
-                'ERROR SAVE RATING:',
-                error
-            );
 
-        }
+//  Obtener ratings usuario
+export const getUserRatings = async () => {
 
-    };
+    try {
 
-// 📥 Obtener ratings usuario
-export const getUserRatings =
-    async () => {
+        // Check Usuario
+        const user = auth.currentUser;
+        if (!user) {return {}; }
 
-        try {
+        const snapshot =await get(ref(database,`ratings/${user.uid}` ) );
+        
+        if (!snapshot.exists()) {return {};}
+        return snapshot.val();
 
-            const user =
-                auth.currentUser;
+    } catch (error) {
 
-            if (!user) {
-                return {};
-            }
+        console.log(
+            'ERROR GET RATINGS:',
+            error
+        );
 
-            const snapshot =
-                await get(
+        return {};
 
-                    ref(
-                        database,
-                        `ratings/${user.uid}`
-                    )
+    }
 
-                );
-
-            if (!snapshot.exists()) {
-                return {};
-            }
-
-            return snapshot.val();
-
-        } catch (error) {
-
-            console.log(
-                'ERROR GET RATINGS:',
-                error
-            );
-
-            return {};
-
-        }
-
-    };
+};

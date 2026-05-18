@@ -1,98 +1,49 @@
 import { useState } from 'react';
-
-import {
-    View,
-    Text,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-} from 'react-native';
-
 import { useDispatch } from 'react-redux';
-
 import { useNavigation } from '@react-navigation/native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, } from 'react-native';
+
 
 import { setUser } from '../../redux/slices/userSlice';
-
 import { loginUser } from '../../services/authService';
 
-import {
-    getFavorites,
-} from '../../services/favoritesService';
+import { getFavorites, } from '../../services/favoritesService';
+import { setFavorites, } from '../../redux/slices/favoritesSlice';
 
-import {
-    setFavorites,
-} from '../../redux/slices/favoritesSlice';
+import { getUserRatings, } from '../../services/ratingsService';
+import { setRatings, } from '../../redux/slices/ratingsSlice';
 
-import {
-    getUserRatings,
-} from '../../services/ratingsService';
 
-import {
-    setRatings,
-} from '../../redux/slices/ratingsSlice';
 
-export default function LoginForm({
-    onClose,
-}) {
+export default function LoginForm({ onClose, }) {
 
     const navigation = useNavigation();
-
     const dispatch = useDispatch();
 
-    const [email, setEmail] =
-        useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
-    const [password, setPassword] =
-        useState('');
-
-    const [error, setError] =
-        useState('');
-
-    // 🔐 Login
+    
+    //  Login
     const handleLogin = async () => {
 
         try {
 
             //console.log('Intentando login...');
-
-            const user =
-                await loginUser(
-                    email.trim(),
-                    password
-                )
-
-            //console.log( 'LOGIN OK:', user);
-
-            dispatch(
-                setUser({
-                    uid: user.uid,
-                    email: user.email,
-                })
-            );
+            const user = await loginUser(email.trim(), password)
+            dispatch(setUser({ uid: user.uid, email: user.email, }));
 
 
-            const favorites =
-                await getFavorites();
-
-            dispatch(
-                setFavorites(favorites)
-            );
-
-            const ratings =
-                await getUserRatings();
-
-            dispatch(
-                setRatings(ratings)
-            );
+            const favorites = await getFavorites();
+            dispatch(setFavorites(favorites));
 
 
-            //console.log( 'Redux actualizado' );
+            const ratings = await getUserRatings();
+            dispatch(setRatings(ratings));
+
 
             onClose();
-
-            //console.log( 'Modal cerrado' );
-
             navigation.navigate('Search');
 
             //console.log( 'Navegación OK' );

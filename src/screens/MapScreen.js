@@ -1,57 +1,36 @@
 import { useState, useEffect, } from 'react';
-import { StyleSheet, View, Button, Text, TouchableOpacity, } from 'react-native';
+import { useSelector } from 'react-redux';
 import MapView, { Marker, } from 'react-native-maps';
+import { StyleSheet, View, Button, Text, TouchableOpacity, } from 'react-native';
+
 import useLocation from '../hooks/useLocation';
 import LoadingOverlay from '../components/ui/LoadingOverlay';
 import SideMenu from '../components/navigation/SideMenu';
 
 
-// Base de datos fallback
-// import restaurantsData from '../data/restaurantes';
-import { useSelector } from 'react-redux';
+
 
 
 export default function MapScreen({ navigation, route, }) {
 
   const [menuVisible, setMenuVisible] = useState(false);
-
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const { location, errorMsg, loading, getLocation, } = useLocation();
 
-  const {
-    location,
-    errorMsg,
-    loading,
-    getLocation,
-  } = useLocation();
-
-
-  //// 🍔 Restaurantes recibidos
-  //const restaurants = route?.params?.restaurants || restaurantsData;
-
-  // Restaurantes de redux
+  //  Restaurantes de redux
   const reduxRestaurants = useSelector(state => state.restaurants.restaurants);
   const restaurants = route?.params?.restaurants || reduxRestaurants;
 
 
-  // 🚀 Obtener ubicación
-  useEffect(() => {
+  // Obtener ubicación
+  useEffect(() => { getLocation(); }, []);
 
-    getLocation();
-
-  }, []);
-
-  // ⏳ Esperar ubicación
+  // Esperar ubicación
   if (!location) {
-
-    return (
-      <LoadingOverlay
-        text="Obteniendo ubicación..."
-      />
-    );
-
+    return (<LoadingOverlay text="Obteniendo ubicación..." />);
   }
 
-  // 🗺️ Región inicial
+  // Región inicial -- Pamplona
   const mapRegion = {
     latitude: location.latitude,
     longitude: location.longitude,
@@ -59,7 +38,7 @@ export default function MapScreen({ navigation, route, }) {
     longitudeDelta: 0.03,
   };
 
-  // 🏠 Inicio
+  //  Inicio
   const handleGoHome = () => {
 
     setMenuVisible(false);
@@ -68,7 +47,7 @@ export default function MapScreen({ navigation, route, }) {
 
   };
 
-  // 🔄 Refresh
+  // Refresh
   const handleRefresh = () => {
 
     setMenuVisible(false);
@@ -77,7 +56,7 @@ export default function MapScreen({ navigation, route, }) {
 
   };
 
-  // 🔍 Search
+  // Search
   const handleSearch = () => {
 
     setMenuVisible(false);
@@ -86,20 +65,12 @@ export default function MapScreen({ navigation, route, }) {
 
   };
 
-  // 📄 Abrir detalles
+  // Abrir detalles
   const handleOpenDetails = () => {
 
-    if (!selectedRestaurant) {
-      return;
-    }
+    if (!selectedRestaurant) { return; }
 
-    navigation.navigate(
-      'Detail',
-      {
-        restaurant:
-          selectedRestaurant,
-      }
-    );
+    navigation.navigate('Detail', { restaurant: selectedRestaurant, });
 
   };
 

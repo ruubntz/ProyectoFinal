@@ -1,6 +1,6 @@
-import {
-    createSlice,
-} from '@reduxjs/toolkit';
+import { createSlice, } from '@reduxjs/toolkit';
+
+
 
 const initialState = {
 
@@ -8,46 +8,32 @@ const initialState = {
 
 };
 
-const ratingsSlice =
-    createSlice({
 
-        name: 'ratings',
 
-        initialState,
+const ratingsSlice = createSlice({
 
-        reducers: {
+    name: 'ratings',
+    initialState,
+    reducers: {
 
-            // ⭐ Guardar rating
-            setRating: (
-                state,
-                action
-            ) => {
+        //  Guardar rating
+        setRating: (state, action) => {
 
-                const {
-                    restaurantId,
-                    rating,
-                } = action.payload;
-
-                state.ratings[
-                    restaurantId
-                ] = rating;
-
-            },
-
-            // ☁️ Cargar ratings
-            setRatings: (
-                state,
-                action
-            ) => {
-
-                state.ratings =
-                    action.payload;
-
-            },
+            const { restaurantId, rating, } = action.payload;
+            state.ratings[restaurantId] = rating;
 
         },
 
-    });
+        // Cargar ratings
+        setRatings: (state, action) => {
+
+            state.ratings = action.payload;
+
+        },
+
+    },
+
+});
 
 export const {
 

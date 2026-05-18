@@ -1,123 +1,78 @@
-import {
-    ref,
-    set,
-    remove,
-    get,
-} from 'firebase/database';
+import { ref, set, remove, get, } from 'firebase/database';
+import { auth, database, } from './firebase';
 
-import {
-    auth,
-    database,
-} from './firebase';
 
-// ❤️ Añadir favorito
-export const addFavorite =
-    async (restaurantId) => {
 
-        try {
+//  Añadir favorito
+export const addFavorite = async (restaurantId) => {
 
-            const user =
-                auth.currentUser;
+    try {
 
-            if (!user) {
-                return;
-            }
+        // Check Usuario
+        const user = auth.currentUser;
+        if (!user) { return; }
 
-            await set(
+        // Enviamos a DDBB
+        await set(ref(database, `favorites/${user.uid}/${restaurantId}`), true);
 
-                ref(
-                    database,
-                    `favorites/${user.uid}/${restaurantId}`
-                ),
+    } catch (error) {
 
-                true
+        console.log(
+            'ERROR ADD FAVORITE:',
+            error
+        );
 
-            );
+    }
 
-        } catch (error) {
+};
 
-            console.log(
-                'ERROR ADD FAVORITE:',
-                error
-            );
+//  Eliminar favorito
+export const removeFavorite = async (restaurantId) => {
 
-        }
+    try {
 
-    };
+        // Check Usuario
+        const user = auth.currentUser;
+        if (!user) { return; }
 
-// ❌ Eliminar favorito
-export const removeFavorite =
-    async (restaurantId) => {
 
-        try {
+        // Eliminamos de DDBB
+        await remove(ref(database, `favorites/${user.uid}/${restaurantId}`));
 
-            const user =
-                auth.currentUser;
+    } catch (error) {
 
-            if (!user) {
-                return;
-            }
+        console.log(
+            'ERROR REMOVE FAVORITE:',
+            error
+        );
 
-            await remove(
+    }
 
-                ref(
-                    database,
-                    `favorites/${user.uid}/${restaurantId}`
-                )
+};
 
-            );
+//  Obtener favoritos
+export const getFavorites = async () => {
 
-        } catch (error) {
+    try {
 
-            console.log(
-                'ERROR REMOVE FAVORITE:',
-                error
-            );
+        // Check Usuario
+        const user = auth.currentUser;
+        if (!user) { return []; }
 
-        }
+        const snapshot = await get(ref(database, `favorites/${user.uid}`));
 
-    };
+        if (!snapshot.exists()) { return []; }
+        return Object.keys(snapshot.val());
 
-// 📥 Obtener favoritos
-export const getFavorites =
-    async () => {
+    } catch (error) {
 
-        try {
+        console.log(
+            'ERROR GET FAVORITES:',
+            error
+        );
 
-            const user =
-                auth.currentUser;
+        return [];
 
-            if (!user) {
-                return [];
-            }
+    }
 
-            const snapshot =
-                await get(
-
-                    ref(
-                        database,
-                        `favorites/${user.uid}`
-                    )
-
-                );
-
-            if (!snapshot.exists()) {
-                return [];
-            }
-
-            return Object.keys(
-                snapshot.val()
-            );
-
-        } catch (error) {
-
-            console.log(
-                'ERROR GET FAVORITES:',
-                error
-            );
-
-            return [];
-
-        }
-
-    };
+};
