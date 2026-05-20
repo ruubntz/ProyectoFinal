@@ -1,36 +1,14 @@
-import {
-    View,
-    Text,
-    StyleSheet,
-    Modal,
-    TouchableOpacity,
-    TextInput,
-} from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, TextInput, } from 'react-native';
 
-export default function CommentModal({
 
-    visible,
-    onClose,
-    onSubmit,
 
-    author,
-    setAuthor,
 
-    commentText,
-    setCommentText,
 
-    rating,
-    setRating,
-
-}) {
+export default function CommentModal({ visible, onClose, onSubmit, author, setAuthor, commentText, setCommentText, rating, setRating, }) {
 
     return (
 
-        <Modal
-            visible={visible}
-            animationType="slide"
-            transparent
-        >
+        <Modal visible={visible} animationType="slide" transparent >
 
             <View style={styles.modalOverlay}>
 
@@ -72,12 +50,12 @@ export default function CommentModal({
                             rating === 1
                                 ? 'Muy malo'
                                 : rating === 2
-                                ? 'Malo'
-                                : rating === 3
-                                ? 'Normal'
-                                : rating === 4
-                                ? 'Muy bueno'
-                                : 'Excelente'
+                                    ? 'Malo'
+                                    : rating === 3
+                                        ? 'Normal'
+                                        : rating === 4
+                                            ? 'Muy bueno'
+                                            : 'Excelente'
                         }
 
                     </Text>

@@ -1,91 +1,63 @@
-import { useState } from 'react';
-
-import {
-  View,
-  Button,
-  StyleSheet,
-  Image,
-} from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Button, StyleSheet, Image, } from 'react-native';
+import { useDispatch, } from 'react-redux';
 
 import AuthModal from '../components/auth/authModal';
 
-import { useEffect } from 'react';
+import { setRestaurants, } from '../redux/slices/restaurantsSlice';
+import { getRestaurants, } from '../services/restaurantService';
 
-import {
-  useDispatch,
-} from 'react-redux';
+import { getFavorites, } from '../services/favoritesService';
+import { setFavorites, } from '../redux/slices/favoritesSlice';
 
-import {
-  setRestaurants,
-} from '../redux/slices/restaurantsSlice';
-
-import {
-  getRestaurants,
-} from '../services/restaurantService';
+import { getComments, } from '../services/commentsService';
+import { setComments, } from '../redux/slices/commentsSlice';
 
 
 
-export default function WelcomeScreen({
-  navigation,
-}) {
+export default function WelcomeScreen({ navigation, }) {
 
-  const dispatch =
-    useDispatch();
+  const dispatch = useDispatch();
 
   useEffect(() => {
 
-    const loadRestaurants =
-      async () => {
+    const loadRestaurants = async () => {
 
-        const restaurants =
-          await getRestaurants();
+      const restaurants = await getRestaurants();
 
-        dispatch(
-          setRestaurants(
-            restaurants
-          )
-        );
+      dispatch(setRestaurants(restaurants));
 
-        //console.log('Restaurants loaded:', restaurants );
+      const comments = await getComments();
 
-      };
+      dispatch(setComments(comments));
+
+      //console.log('Restaurants loaded:', restaurants );
+
+    };
 
     loadRestaurants();
 
   }, []);
 
-  // 🔐 Modal auth
-  const [
-    showAuthModal,
-    setShowAuthModal,
-  ] = useState(false);
 
-  // 👤 Invitado
-  const handleGuestAccess = () => {
+  //  Modal auth
+  const [showAuthModal, setShowAuthModal,] = useState(false);
 
-    navigation.navigate('Search');
+  //  Invitado
+  const handleGuestAccess = () => { navigation.navigate('Search'); };
 
-  };
+  //  Abrir auth
+  const handleOpenAuth = () => { setShowAuthModal(true); };
 
-  // 🔐 Abrir auth
-  const handleOpenAuth = () => {
+  // Cerrar auth
+  const handleCloseAuth = () => { setShowAuthModal(false); };
 
-    setShowAuthModal(true);
-
-  };
-
-  // ❌ Cerrar auth
-  const handleCloseAuth = () => {
-
-    setShowAuthModal(false);
-
-  };
 
   return (
 
     <View style={styles.container}>
 
-      {/* 🖼️ Logo */}
+      {/* Logo */}
       <View style={styles.logoBox}>
 
         <Image
@@ -96,7 +68,7 @@ export default function WelcomeScreen({
 
       </View>
 
-      {/* 🔐 Login */}
+      {/* Login */}
       <View style={styles.buttonContainer}>
 
         <Button
@@ -106,7 +78,7 @@ export default function WelcomeScreen({
 
       </View>
 
-      {/* 👤 Invitado */}
+      {/* Invitado */}
       <View style={styles.buttonContainer}>
 
         <Button
@@ -116,7 +88,7 @@ export default function WelcomeScreen({
 
       </View>
 
-      {/* 🔐 Modal auth */}
+      {/* Modal auth */}
       <AuthModal
         visible={showAuthModal}
         onClose={handleCloseAuth}

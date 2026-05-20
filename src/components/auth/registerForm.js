@@ -1,99 +1,55 @@
 import { useState } from 'react';
-
-import {
-    View,
-    Text,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-} from 'react-native';
-
 import { useDispatch } from 'react-redux';
+import { useNavigation, } from '@react-navigation/native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, } from 'react-native';
 
-import {
-    useNavigation,
-} from '@react-navigation/native';
 
-import {
-    setUser,
-} from '../../redux/slices/userSlice';
+import { setUser, } from '../../redux/slices/userSlice';
+import { registerUser, } from '../../services/authService';
 
-import {
-    registerUser,
-} from '../../services/authService';
 
-export default function RegisterForm({
-    onClose,
-}) {
 
-    const navigation =
-        useNavigation();
 
-    const dispatch =
-        useDispatch();
 
-    const [email, setEmail] =
-        useState('');
+export default function RegisterForm({ onClose, }) {
 
-    const [password, setPassword] =
-        useState('');
+    const navigation = useNavigation();
+    const dispatch = useDispatch();
 
-    const [
-        confirmPassword,
-        setConfirmPassword,
-    ] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword,] = useState('');
+    const [error, setError] = useState('');
 
-    const [error, setError] =
-        useState('');
 
-    // 📝 Registro
+    //  Registro
     const handleRegister = async () => {
 
-        // ⚠️ Validar passwords
-        if (
-            password !==
-            confirmPassword
-        ) {
+        //  Validar passwords
+        if (password !== confirmPassword) {
 
-            setError(
-                'Las contraseñas no coinciden'
-            );
-
+            setError('Las contraseñas no coinciden');
             return;
 
         }
 
         try {
 
-            const user =
-                await registerUser(
-                    email.trim(),
-                    password
-                );
+            const user = await registerUser(email.trim(), password);
 
-            // 💾 Redux
-            dispatch(
-                setUser({
-                    uid: user.uid,
-                    email: user.email,
-                })
-            );
+            // Redux
+            dispatch(setUser({ uid: user.uid, email: user.email, }));
 
-            // ❌ Cerrar modal
+            // Cerrar modal
             onClose();
 
-            // 🚀 Navegar
-            navigation.navigate(
-                'Search'
-            );
+            // Navegar
+            navigation.navigate('Search');
 
         } catch (err) {
 
             console.log(err);
-
-            setError(
-                err.message
-            );
+            setError(err.message);
 
         }
 

@@ -1,61 +1,41 @@
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, } from 'react-native';
 
-
-// Base de datos local
-// import restaurants from '../data/restaurantes';
-import { useSelector } from 'react-redux';
+import SideMenu from '../navigation/SideMenu';
 
 
 export default function SearchScreen({ navigation }) {
 
-    // 🔍 Texto búsqueda
     const [searchText, setSearchText] = useState('');
-
-    // ⭐ Rating mínimo
     const [minRating, setMinRating] = useState(0);
-
-    // ⚠️ Filtro gluten
-    const [glutenFreeOnly, setGlutenFreeOnly] = useState(false);
-
-
-    // Restaurantes de Redux
+    const [selectedAllergens, setSelectedAllergens,] = useState([]);
+    const [showMenu, setShowMenu] = useState(false);
     const restaurants = useSelector(state => state.restaurants.restaurants);
 
-    // 🔎 Filtrado restaurantes
+    const allergens = [...new Set(restaurants.flatMap(restaurant => restaurant.allergens)),];
+
+
+    //  Filtrado restaurantes
     const filteredRestaurants = restaurants.filter((restaurant) => {
 
-        // 🔍 Buscar por nombre o categoría
-        const matchesSearch =
+        // Buscar por nombre o categoría
+        const matchesSearch = restaurant.name.toLowerCase().includes(searchText.toLowerCase()) || restaurant.categories.join(' ').toLowerCase().includes(searchText.toLowerCase());
 
-            restaurant.name
-                .toLowerCase()
-                .includes(searchText.toLowerCase()) ||
+        // Rating mínimo
+        const matchesRating = restaurant.rating >= minRating;
 
-            restaurant.categories
-                .join(' ')
-                .toLowerCase()
-                .includes(searchText.toLowerCase());
+        // Alergenos
+        const matchesAllergen = selectedAllergens.every(allergen => !restaurant.allergens.includes(allergen));
 
-        // ⭐ Rating mínimo
-        const matchesRating =
-            restaurant.rating >= minRating;
 
-        // ⚠️ Sin gluten
-        const matchesGluten =
-            !glutenFreeOnly ||
-            !restaurant.allergens.includes('Gluten');
-
-        return (
-            matchesSearch &&
-            matchesRating &&
-            matchesGluten
-        );
+        // Devolvemos la lista filtrada
+        return (matchesSearch && matchesRating && matchesAllergen);
     });
 
 
 
-    // 🍔 Render restaurante
+    //  Render restaurante
     const renderRestaurant = ({ item }) => (
 
         <TouchableOpacity
@@ -85,11 +65,7 @@ export default function SearchScreen({ navigation }) {
             </Text>
 
             <Text style={styles.restaurantAllergens}>
-                ⚠️ {
-                    item.allergens.length > 0
-                        ? item.allergens.join(', ')
-                        : 'Sin alérgenos'
-                }
+                ⚠️ {item.allergens.length > 0 ? item.allergens.join(', ') : 'Sin alérgenos'}
             </Text>
 
         </TouchableOpacity>
@@ -97,7 +73,22 @@ export default function SearchScreen({ navigation }) {
     );
 
     return (
+
         <View style={styles.container}>
+
+            {/* ☰ Menu */}
+            <TouchableOpacity
+                style={styles.menuButton}
+                onPress={() =>
+                    setShowMenu(true)
+                }
+            >
+
+                <Text style={styles.menuIcon}>
+                    ☰
+                </Text>
+
+            </TouchableOpacity>
 
             {/* 🔍 Título */}
             <Text style={styles.title}>
@@ -110,11 +101,7 @@ export default function SearchScreen({ navigation }) {
                 onPress={() => {
 
                     navigation.navigate(
-                        'Map',
-                        {
-                            restaurants:
-                                filteredRestaurants,
-                        }
+                        'Map', { restaurants: filteredRestaurants, }
                     );
 
                 }}
@@ -165,25 +152,59 @@ export default function SearchScreen({ navigation }) {
 
             </View>
 
-            {/* ⚠️ Sin gluten */}
-            <TouchableOpacity
-                style={[
-                    styles.filterButton,
-                    glutenFreeOnly &&
-                    styles.activeFilter
-                ]}
-                onPress={() =>
-                    setGlutenFreeOnly(
-                        !glutenFreeOnly
-                    )
-                }
-            >
+            {/* ⚠️ Alérgenos */}
+            <Text style={styles.filterTitle}>
+                Excluir alérgenos
+            </Text>
 
-                <Text>
-                    Sin Gluten
-                </Text>
+            <View style={styles.ratingButtons}>
 
-            </TouchableOpacity>
+                {allergens.map((allergen) => (
+
+                    <TouchableOpacity
+
+                        key={allergen}
+
+                        style={[
+                            styles.filterButton,
+
+                            selectedAllergens.includes(
+                                allergen
+                            ) && styles.activeFilter,
+                        ]}
+
+                        onPress={() =>
+
+                            setSelectedAllergens(
+
+                                selectedAllergens.includes(
+                                    allergen
+                                )
+
+                                    ? selectedAllergens.filter(
+                                        item =>
+                                            item !== allergen
+                                    )
+
+                                    : [
+                                        ...selectedAllergens,
+                                        allergen,
+                                    ]
+
+                            )
+
+                        }
+                    >
+
+                        <Text>
+                            {allergen}
+                        </Text>
+
+                    </TouchableOpacity>
+
+                ))}
+
+            </View>
 
             {/* 🍔 Lista restaurantes */}
             <FlatList
@@ -193,6 +214,30 @@ export default function SearchScreen({ navigation }) {
                 }
                 renderItem={renderRestaurant}
                 contentContainerStyle={styles.list}
+            />
+
+            <SideMenu
+
+                visible={showMenu}
+
+                onClose={() =>
+                    setShowMenu(false)
+                }
+
+                onGoHome={() => {
+
+                    setShowMenu(false);
+
+                    navigation.navigate(
+                        'Welcome'
+                    );
+
+                }}
+
+                onSearch={() =>
+                    setShowMenu(false)
+                }
+
             />
 
         </View>
@@ -205,6 +250,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f2f2f2',
         padding: 16,
+        paddingTop: 50,
     },
 
     title: {
@@ -297,6 +343,15 @@ const styles = StyleSheet.create({
     restaurantAllergens: {
         fontSize: 13,
         color: '#666',
+    },
+    menuButton: {
+        position: 'absolute',
+        top: 50,
+        left: 16,
+        zIndex: 20,
+    },
+    menuIcon: {
+        fontSize: 28,
     },
 
 });
